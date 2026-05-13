@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import {
@@ -9,11 +10,27 @@ import {
   Clock,
   LogOut,
   ArrowRight,
+  History,
 } from "lucide-react";
 import { auth } from "@/lib/firebase";
 
+interface HistoryItem {
+  id: number;
+  topic: string;
+  content: string;
+  createdAt: string;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  useEffect(() => {
+    const savedHistory = JSON.parse(
+      localStorage.getItem("contentHistory") || "[]"
+    );
+    setHistory(savedHistory);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -27,33 +44,6 @@ export default function DashboardPage() {
   const handleOpenGenerator = () => {
     router.push("/generate");
   };
-
-  const features = [
-    {
-      title: "AI Content Generation",
-      description:
-        "Create professional LinkedIn posts and social media content on any topic.",
-      icon: Sparkles,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
-    },
-    {
-      title: "Any Topic",
-      description:
-        "Generate content for Data Analytics, Marketing, AI, Education, and more.",
-      icon: PenSquare,
-      color: "text-indigo-600",
-      bg: "bg-indigo-50",
-    },
-    {
-      title: "Professional Output",
-      description:
-        "Get polished, ready-to-share content with hashtags and engaging structure.",
-      icon: BarChart3,
-      color: "text-green-600",
-      bg: "bg-green-50",
-    },
-  ];
 
   const sampleTopics = [
     "Data Analytics",
@@ -95,7 +85,7 @@ export default function DashboardPage() {
       </header>
 
       <section className="max-w-7xl mx-auto px-6 py-10">
-        {/* Welcome Section */}
+        {/* Welcome Card */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/60 p-8 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
@@ -109,8 +99,8 @@ export default function DashboardPage() {
               </h2>
 
               <p className="text-lg text-slate-600 max-w-2xl">
-                Generate high-quality AI-powered social media posts for any topic
-                in just a few seconds.
+                Generate AI-powered content and track your recently created
+                posts.
               </p>
             </div>
 
@@ -124,42 +114,45 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Features */}
+        {/* Analytics Summary */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {features.map((feature) => {
-            const Icon = feature.icon;
+          <div className="bg-white/90 rounded-3xl shadow-lg border border-white/60 p-6">
+            <BarChart3 className="w-8 h-8 text-blue-600 mb-3" />
+            <h3 className="text-2xl font-bold text-slate-900">
+              {history.length}
+            </h3>
+            <p className="text-slate-600 text-sm">
+              Total Posts Generated
+            </p>
+          </div>
 
-            return (
-              <div
-                key={feature.title}
-                className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg border border-white/60 p-6"
-              >
-                <div
-                  className={`w-14 h-14 rounded-2xl ${feature.bg} flex items-center justify-center mb-4`}
-                >
-                  <Icon className={`w-7 h-7 ${feature.color}`} />
-                </div>
+          <div className="bg-white/90 rounded-3xl shadow-lg border border-white/60 p-6">
+            <PenSquare className="w-8 h-8 text-indigo-600 mb-3" />
+            <h3 className="text-2xl font-bold text-slate-900 truncate">
+              {history[0]?.topic || "-"}
+            </h3>
+            <p className="text-slate-600 text-sm">Latest Topic</p>
+          </div>
 
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">
-                  {feature.title}
-                </h3>
-
-                <p className="text-slate-600 text-sm leading-6">
-                  {feature.description}
-                </p>
-              </div>
-            );
-          })}
+          <div className="bg-white/90 rounded-3xl shadow-lg border border-white/60 p-6">
+            <Sparkles className="w-8 h-8 text-green-600 mb-3" />
+            <h3 className="text-2xl font-bold text-slate-900">
+              Groq AI
+            </h3>
+            <p className="text-slate-600 text-sm">
+              Content Generation Engine
+            </p>
+          </div>
         </div>
 
-        {/* Suggested Topics */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/60 p-8">
+        {/* Popular Topics */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/60 p-8 mb-8">
           <h3 className="text-2xl font-bold text-slate-900 mb-4">
             Popular Topics
           </h3>
 
           <p className="text-slate-600 mb-6">
-            Try generating content on these trending topics.
+            Click a topic to generate content instantly.
           </p>
 
           <div className="flex flex-wrap gap-3">
@@ -177,6 +170,46 @@ export default function DashboardPage() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Content History */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/60 p-8">
+          <div className="flex items-center gap-3 mb-6">
+            <History className="w-6 h-6 text-blue-600" />
+            <h3 className="text-2xl font-bold text-slate-900">
+              Recent Content History
+            </h3>
+          </div>
+
+          {history.length === 0 ? (
+            <p className="text-slate-500">
+              No content generated yet. Create your first post to see
+              your history and analytics.
+            </p>
+          ) : (
+            <div className="space-y-4">
+              {history.slice(0, 5).map((item) => (
+                <div
+                  key={item.id}
+                  className="p-5 rounded-2xl bg-slate-50 border border-slate-200"
+                >
+                  <div className="flex items-center justify-between mb-2 gap-4">
+                    <h4 className="font-semibold text-slate-900">
+                      {item.topic}
+                    </h4>
+
+                    <span className="text-xs text-slate-500 whitespace-nowrap">
+                      {item.createdAt}
+                    </span>
+                  </div>
+
+                  <p className="text-sm text-slate-600 line-clamp-3">
+                    {item.content}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </main>

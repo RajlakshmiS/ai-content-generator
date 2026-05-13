@@ -4,7 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { Sparkles, LogIn, Mail, Lock, ArrowRight } from "lucide-react";
+import {
+  Sparkles,
+  LogIn,
+  Mail,
+  Lock,
+  ArrowRight,
+} from "lucide-react";
 import { auth } from "@/lib/firebase";
 
 export default function LoginPage() {
@@ -18,6 +24,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Basic validation
     if (!email.trim() || !password.trim()) {
       setMessage("Please enter both email and password.");
       return;
@@ -27,16 +34,28 @@ export default function LoginPage() {
     setMessage("");
 
     try {
+      // Sign in with Firebase Authentication
       await signInWithEmailAndPassword(auth, email, password);
 
+      // Show success message
       setMessage("Login successful! Redirecting to dashboard...");
 
+      // Redirect to dashboard
       setTimeout(() => {
         router.push("/dashboard");
       }, 1000);
     } catch (error: unknown) {
+      // Friendly Firebase error messages
       if (error instanceof Error) {
-        setMessage(error.message);
+        if (error.message.includes("auth/invalid-credential")) {
+          setMessage("Invalid email or password.");
+        } else if (error.message.includes("auth/user-not-found")) {
+          setMessage("No account found with this email.");
+        } else if (error.message.includes("auth/wrong-password")) {
+          setMessage("Incorrect password.");
+        } else {
+          setMessage(error.message);
+        }
       } else {
         setMessage("Failed to login.");
       }
@@ -55,7 +74,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Card */}
+        {/* Login Card */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/60 p-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 mb-4">
@@ -84,7 +103,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Form */}
+          {/* Login Form */}
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email */}
             <div>
@@ -126,7 +145,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Login Button */}
             <button
               type="submit"
               disabled={loading}

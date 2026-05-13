@@ -3,7 +3,7 @@ import Groq from "groq-sdk";
 
 export async function POST(req: Request) {
   try {
-    // Read topic from request body
+    // Get topic from request body
     const { topic } = await req.json();
 
     // Validate topic
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       apiKey,
     });
 
-    // Create prompt
+    // Prompt for generating professional social media content
     const prompt = `
 Create an engaging and professional LinkedIn-style social media post about "${topic}".
 
@@ -53,7 +53,7 @@ Requirements:
         {
           role: "system",
           content:
-            "You are an expert social media content writer who creates polished, engaging, and professional posts.",
+            "You are an expert social media content writer who creates polished, engaging, and professional posts. When the topic is related to data analytics, business intelligence, SQL, Python, Tableau, or Power BI, emphasize insights, dashboards, and data storytelling.",
         },
         {
           role: "user",
@@ -69,7 +69,7 @@ Requirements:
       completion.choices[0]?.message?.content?.trim() ||
       "No content generated.";
 
-    // Return response
+    // Return generated content
     return NextResponse.json({
       content,
     });

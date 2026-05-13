@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Sparkles,
   PenSquare,
@@ -11,6 +12,8 @@ import {
 } from "lucide-react";
 
 export default function GeneratePage() {
+  const searchParams = useSearchParams();
+
   const [topic, setTopic] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,6 +27,14 @@ export default function GeneratePage() {
     "Machine Learning",
     "Career Growth",
   ];
+
+  // Prefill topic from URL query parameter (?topic=...)
+  useEffect(() => {
+    const topicFromUrl = searchParams.get("topic");
+    if (topicFromUrl) {
+      setTopic(topicFromUrl);
+    }
+  }, [searchParams]);
 
   const handleGenerate = async () => {
     if (!topic.trim()) {
@@ -47,6 +58,23 @@ export default function GeneratePage() {
 
       if (response.ok && data.content) {
         setContent(data.content);
+
+        // Save generated content to localStorage for dashboard analytics
+        const existingHistory = JSON.parse(
+          localStorage.getItem("contentHistory") || "[]"
+        );
+
+        const newEntry = {
+          id: Date.now(),
+          topic,
+          content: data.content,
+          createdAt: new Date().toLocaleString(),
+        };
+
+        localStorage.setItem(
+          "contentHistory",
+          JSON.stringify([newEntry, ...existingHistory].slice(0, 10))
+        );
       } else {
         setContent(
           data.details ||

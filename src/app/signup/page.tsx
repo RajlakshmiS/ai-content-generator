@@ -4,7 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { Sparkles, UserPlus, Mail, Lock, ArrowRight } from "lucide-react";
+import {
+  Sparkles,
+  UserPlus,
+  Mail,
+  Lock,
+  ArrowRight,
+} from "lucide-react";
 import { auth } from "@/lib/firebase";
 
 export default function SignupPage() {
@@ -18,6 +24,7 @@ export default function SignupPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Basic validation
     if (!email.trim() || !password.trim()) {
       setMessage("Please enter both email and password.");
       return;
@@ -32,16 +39,32 @@ export default function SignupPage() {
     setMessage("");
 
     try {
+      // Create user with Firebase Authentication
       await createUserWithEmailAndPassword(auth, email, password);
 
+      // Show success message
       setMessage("Account created successfully! Redirecting to login...");
 
+      // Clear form
+      setEmail("");
+      setPassword("");
+
+      // Redirect to login page after 1.5 seconds
       setTimeout(() => {
         router.push("/login");
       }, 1500);
     } catch (error: unknown) {
+      // Friendly Firebase error messages
       if (error instanceof Error) {
-        setMessage(error.message);
+        if (error.message.includes("auth/email-already-in-use")) {
+          setMessage("An account with this email already exists.");
+        } else if (error.message.includes("auth/invalid-email")) {
+          setMessage("Please enter a valid email address.");
+        } else if (error.message.includes("auth/weak-password")) {
+          setMessage("Password is too weak.");
+        } else {
+          setMessage(error.message);
+        }
       } else {
         setMessage("Failed to create account.");
       }
@@ -60,7 +83,7 @@ export default function SignupPage() {
           </div>
         </div>
 
-        {/* Card */}
+        {/* Signup Card */}
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/60 p-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 mb-4">
@@ -89,7 +112,7 @@ export default function SignupPage() {
             </div>
           )}
 
-          {/* Form */}
+          {/* Signup Form */}
           <form onSubmit={handleSignup} className="space-y-5">
             {/* Email */}
             <div>
@@ -135,7 +158,7 @@ export default function SignupPage() {
               </p>
             </div>
 
-            {/* Submit Button */}
+            {/* Signup Button */}
             <button
               type="submit"
               disabled={loading}
