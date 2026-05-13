@@ -39,15 +39,7 @@ This makes the project relevant to data analytics roles by showing how data can 
 
 ## 📁 Project Structure
 
-src/
-├── app/
-│   ├── signup/
-│   ├── login/
-│   ├── dashboard/
-│   ├── generate/
-│   └── api/generate/
-└── lib/
-    └── firebase.ts
+Sign Up → Login → Dashboard → AI Content Generator → Content Saved to History → Analytics Displayed on Dashboard
 
 ## 🔐 Authentication Flow
 
